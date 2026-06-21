@@ -14,8 +14,9 @@ exec --no-startup-id pgrep -x libinput-gestures >/dev/null || libinput-gestures-
 exec --no-startup-id xinput --set-prop 13 "libinput Accel Speed" 0.2
 exec --no-startup-id pgrep -x polkit-gnome-authentication-agent-1 >/dev/null || /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 exec --no-startup-id sudo modprobe asus-nb-wmi
-exec --no-startup-id bash -c 'pgrep -x hiddify >/dev/null || (i3-msg workspace 5; sleep 1; sudo /sbin/hiddify &)'
-
+exec --no-startup-id bash -c 'pgrep -x hiddify >/dev/null || (i3-msg workspace 5; sleep 1; run_scaled --scale=1.5 sudo /sbin/hiddify &)'
+exec --no-startup-id xset s off -dpms
+exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock -nofork -c 000000
 
 # Always run after reload
 exec_always --no-startup-id xrandr --output eDP --mode 2560x1440
@@ -23,12 +24,18 @@ exec_always --no-startup-id wal -i /home/arya/i3wm-config/IMG_2103.png
 exec_always --no-startup-id sh -c "sleep 2 && ~/.config/polybar/launch.sh"
 exec_always --no-startup-id picom
 exec_always --no-startup-id setxkbmap -layout us,ir -option 'grp:alt_shift_toggle'
+exec_always --no-startup-id ~/.screenlayout/layout2.sh
 
 # Volume
 bindsym XF86AudioRaiseVolume exec --no-startup-id ~/.config/scripts/volume-up.sh
 bindsym XF86AudioLowerVolume exec --no-startup-id bash -c 'pactl set-sink-volume @DEFAULT_SINK@ -1% && volume=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -oP "\\d+%" | head -1) && dunstify -r 91190 -t 1000 -i audio-volume-low "Volume: $volume"'
 bindsym XF86AudioMute exec --no-startup-id ~/.config/scripts/mute-toggle.sh
 bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle
+
+
+#Sleep
+bindsym XF86Sleep exec --no-startup-id i3lock -c 000000 && systemctl suspend
+
 
 # Brightness
 bindsym XF86MonBrightnessDown exec light -U 5 && notify-send -r 9993 "Brightness" "☀ $(light -G | cut -d'.' -f1)%"
@@ -37,7 +44,7 @@ bindsym XF86MonBrightnessUp exec light -A 5 && notify-send -r 9993 "Brightness" 
 # Keyboard backlight / Aura controls
 bindcode 237 exec --no-startup-id bash -c "asusctl -k med && notify-send -u normal -t 2000 'Keyboard Backlight' 'Set to MEDIUM'"
 bindcode 238 exec --no-startup-id bash -c "asusctl -k high && notify-send -u normal -t 2000 'Keyboard Backlight' 'Set to HIGH'"
-bindcode 210 exec --no-startup-id bash -c "asusctl aura -n && notify-send -u normal -t 2000 'Aura Lighting' 'Switched to next mode'"
+bindcode 210 exec --no-startup-id bash -c "asusctl aura -n && notify-send -u normal -t 2000 'Aura Lighting' 'Switched to next mode'" 
 
 # Floating modifier
 floating_modifier $mod
@@ -46,10 +53,11 @@ floating_modifier $mod
 bindsym $mod+Return exec kitty
 bindsym $mod+Shift+q kill
 bindsym $mod+d exec --no-startup-id rofi -show drun -dpi 130
-bindsym $mod+slash exec --no-startup-id ~/.config/scripts/wifi-menu.sh
+bindsym $mod+slash exec --no-startup-id nmgui
 bindsym $mod+x exec --no-startup-id zen-browser
 bindsym $mod+z exec --no-startup-id code
 bindsym $mod+g exec --no-startup-id nautilus
+bindsym $mod+b exec --no-startup-id blueman-manager
 
 # Navigation (Vim + Arrow keys)
 bindsym $mod+j focus left
@@ -140,6 +148,8 @@ bindsym $mod+r mode "resize"
 # Window rules
 for_window [class="Hiddify"] floating enable, resize set 800 600, move position center, move to workspace number 5
 for_window [class="AyuGramDesktop"] floating enable, resize set 800 930, move position center
+for_window [class="nmgui"] floating enable, resize set 700 550, move position center
+
 
 # Borders & Colors
 default_border pixel
